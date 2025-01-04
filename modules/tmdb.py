@@ -280,32 +280,32 @@ class TMDb:
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_collection(self, tmdb_id, partial=None):
         try:                            return self.TMDb.collection(tmdb_id, partial=partial)
-        except NotFound as e:           raise Failed(f"TMDb Error: No Collection found for TMDb ID {tmdb_id}: {e}")
+        except NotFound as e:           raise Failed(f"TMDb Error: No Collection found for TMDb ID {tmdb_id}")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_person(self, tmdb_id, partial=None):
         try:                            return self.TMDb.person(tmdb_id, partial=partial)
-        except NotFound as e:           raise Failed(f"TMDb Error: No Person found for TMDb ID {tmdb_id}: {e}")
+        except NotFound as e:           raise Failed(f"TMDb Error: No Person found for TMDb ID {tmdb_id}")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def _company(self, tmdb_id, partial=None):
         try:                            return self.TMDb.company(tmdb_id, partial=partial)
-        except NotFound as e:           raise Failed(f"TMDb Error: No Company found for TMDb ID {tmdb_id}: {e}")
+        except NotFound as e:           raise Failed(f"TMDb Error: No Company found for TMDb ID {tmdb_id}")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def _network(self, tmdb_id, partial=None):
         try:                            return self.TMDb.network(tmdb_id, partial=partial)
-        except NotFound as e:           raise Failed(f"TMDb Error: No Network found for TMDb ID {tmdb_id}: {e}")
+        except NotFound as e:           raise Failed(f"TMDb Error: No Network found for TMDb ID {tmdb_id}")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def _keyword(self, tmdb_id):
         try:                            return self.TMDb.keyword(tmdb_id)
-        except NotFound as e:           raise Failed(f"TMDb Error: No Keyword found for TMDb ID {tmdb_id}: {e}")
+        except NotFound as e:           raise Failed(f"TMDb Error: No Keyword found for TMDb ID {tmdb_id}")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_list(self, tmdb_id):
         try:                            return self.TMDb.list(tmdb_id)
-        except NotFound as e:           raise Failed(f"TMDb Error: No List found for TMDb ID {tmdb_id}: {e}")
+        except NotFound as e:           raise Failed(f"TMDb Error: No List found for TMDb ID {tmdb_id}")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_popular_people(self, limit):

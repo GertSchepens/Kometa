@@ -377,7 +377,8 @@ def start(attrs):
                 ("Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid:", r"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: (.*)"),
                 ("Convert Warning: No MyAnimeList Found for AniDB ID:", r"Convert Warning: No MyAnimeList Found for AniDB ID: (.*) of Guid: .*"),
                 ("TMDb Error: No Movie found for TMDb ID:", r"TMDb Error: No Movie found for TMDb ID: (.*)"),
-                ("TMDb Error: No valid TMDb IDs in:", r"TMDb Error: No valid TMDb IDs in: (.*)"),
+                ("TMDb Error: No valid TMDb IDs in", r"TMDb Error: No valid TMDb IDs in (.*)"),
+                ("TMDb Error: No Collection found for TMDb ID", r"TMDb Error: No Collection found for TMDb ID (.*)"),
                 ("TVDb Error: No Series found for TVDb ID:", r"TVDb Error: No Series found for TVDb ID: (.*) at .*"),
                 ("Trakt Error: No TVDb ID found for", r"Trakt Error: No TVDb ID found for (.*)"),
                 ("Filter Error: No TMDb ID found for", r"Filter Error: No TMDb ID found for (.*)"),
@@ -431,7 +432,7 @@ def start(attrs):
                         connector_title = True
                     if key.startswith("Plex Error: Plex Library"):
                         logger.info(f"The follow libraries could not be found in Plex:")
-                    if key.startswith("Plex Error"):
+                    elif key.startswith("Plex Error"):
                         logger.info(f"{key}")
                     elif key.startswith("Config Error"):
                         logger.info(f"{key}")
@@ -454,13 +455,15 @@ def start(attrs):
                     logger.info("")
 
 
-                elif key.startswith(("TMDb Error: No valid TMDb IDs in","Overlay Error","Overlay Warning: Overlays attempted on")) and key in other_message:
+                elif key.startswith(("TMDb Error: No valid TMDb IDs in","TMDb Error: No Collection found for TMDb ID","Overlay Error","Overlay Warning: Overlays attempted on")) and key in other_message:
                     if builder_title is False:
                         logger.separator("Collection/Overlay/Playlist Errors", space=False, border=False)
                         logger.info("")
                         builder_title = True
-                    if key.startswith("TMDb Error: No valid TMDb IDs in"):
-                        logger.info(f"Builder Error: No valid TMDb IDs in")
+                    if key.startswith("TMDb Error: No Collection found for TMDb ID"):
+                        logger.info(f"Invalid TMDb collection ID:")
+                    elif key.startswith("TMDb Error: No valid TMDb IDs in"):
+                        logger.info(f"Builder Error: No valid TMDb IDs in:")
                     elif key.startswith("Overlay Error"):
                         logger.info(f"{key}")
                     elif key.startswith("Overlay Warning: Overlays attempted on"):
@@ -519,7 +522,7 @@ def start(attrs):
             for err_type in ["WARNING", "ERROR", "CRITICAL"]:
                 if err_type not in log_data:
                     continue
-                logger.separator(f"{err_type.lower().capitalize()} Summary", space=False, border=False)
+                logger.separator(f"Uncategorized {err_type.lower().capitalize()} Summary", space=False, border=False)
 
                 logger.info("")
                 logger.info("Count | Message")
