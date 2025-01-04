@@ -377,7 +377,7 @@ def start(attrs):
                 ("Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid:", r"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: (.*)"),
                 ("Convert Warning: No MyAnimeList Found for AniDB ID:", r"Convert Warning: No MyAnimeList Found for AniDB ID: (.*) of Guid: .*"),
                 ("TMDb Error: No Movie found for TMDb ID:", r"TMDb Error: No Movie found for TMDb ID: (.*)"),
-                ("TMDb Error: No valid TMDb IDs in", r"TMDb Error: No valid TMDb IDs in (.*)"),
+                ("TMDb Error: No valid TMDb IDs in:", r"TMDb Error: No valid TMDb IDs in: (.*)"),
                 ("TVDb Error: No Series found for TVDb ID:", r"TVDb Error: No Series found for TVDb ID: (.*) at .*"),
                 ("Trakt Error: No TVDb ID found for", r"Trakt Error: No TVDb ID found for (.*)"),
                 ("Filter Error: No TMDb ID found for", r"Filter Error: No TMDb ID found for (.*)"),
@@ -392,6 +392,7 @@ def start(attrs):
             ]
             other_message = {}
 
+
             with open(logger.main_log, encoding="utf-8") as f:
                 for log_line in f:
                     for err_type in ["WARNING", "ERROR", "CRITICAL"]:
@@ -401,16 +402,21 @@ def start(attrs):
                             for key, reg in other_log_groups:
                                 if log_line.startswith(key):
                                     other = True
-                                    _name = re.match(reg, log_line).group(1)
-                                    if key not in other_message:
-                                        other_message[key] = {"list": [], "count": 0}
-                                    other_message[key]["count"] += 1
-                                    if _name not in other_message[key]:
-                                        other_message[key]["list"].append(_name)
-                            if other is False:
+                                    match = re.match(reg, log_line)
+                                    if match:  # Ensure match is not None
+                                        _name = match.group(1)
+                                        if key not in other_message:
+                                            other_message[key] = {"list": [], "count": 0}
+                                        other_message[key]["count"] += 1
+                                        if _name not in other_message[key]["list"]:
+                                            other_message[key]["list"].append(_name)
+                                    else:
+                                        print(f"Warning: No match found for log line: {log_line}")
+                            if not other:
                                 if err_type not in log_data:
                                     log_data[err_type] = []
                                 log_data[err_type].append(log_line)
+
             connector_title = False
             convert_title = False
             asset_title = False
@@ -448,13 +454,13 @@ def start(attrs):
                     logger.info("")
 
 
-                if key.startswith(("TMDb Error: No valid TMDb IDs in","Overlay Error","Overlay Warning: Overlays attempted on")) and key in other_message:
+                elif key.startswith(("TMDb Error: No valid TMDb IDs in","Overlay Error","Overlay Warning: Overlays attempted on")) and key in other_message:
                     if builder_title is False:
                         logger.separator("Collection/Overlay/Playlist Errors", space=False, border=False)
                         logger.info("")
                         builder_title = True
                     if key.startswith("TMDb Error: No valid TMDb IDs in"):
-                        logger.info(f"Builder Error: No valid TMDb IDs in:")
+                        logger.info(f"Builder Error: No valid TMDb IDs in")
                     elif key.startswith("Overlay Error"):
                         logger.info(f"{key}")
                     elif key.startswith("Overlay Warning: Overlays attempted on"):
@@ -630,11 +636,15 @@ def run_config(config, stats):
         breaker = f"{logger.separating_character * longest}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 10}|"
         logger.separator(breaker, space=False, border=False, side_space=False, left=True)
         for name, data in status.items():
+            # Replace 'Kometa Failure' with error if present
+            if data['status'] == 'Kometa Failure' and data.get('errors'):
+                # Convert all errors to strings before joining
+                data['status'] = "; ".join(map(str, data['errors']))
+
             logger.info(f"{name:<{longest}} | {data['added']:>5} | {data['unchanged']:>5} | {data['removed']:>5} | {data['run_time']:>8} | {data['status']}")
             if data["errors"]:
-                for error in data["errors"]:
-                    logger.info(error)
                 logger.info("")
+
 
     logger.info("")
     logger.separator("Summary")
