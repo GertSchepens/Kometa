@@ -438,7 +438,12 @@ def start(attrs):
                             formatted_items.append("'Please check your API key is valid or check TMDb guidance for getting a new API key'")
                         else:
                             formatted_items.append(f"'{stripped_item}'")
-                    formatted_list = ", ".join(formatted_items)
+                    formatted_list = ", ".join([f"'{item.strip('\'\"')}'" for item in other_message[key]["list"]])
+
+                    # Check if the formatted_list exceeds 500 characters
+                    if len(formatted_list) > 500:
+                        # Reformat the list to show each entry on a new line
+                        formatted_list = "\n".join([f"'{item.strip('\'\"')}'" for item in other_message[key]["list"]])
                     logger.info(formatted_list)
                     logger.info("")
 
@@ -455,6 +460,11 @@ def start(attrs):
                     elif key.startswith("Overlay Warning: Overlays attempted on"):
                         logger.info(f"Image Not Found in Plex (Error 404) when attempting Overlays on:")
                     formatted_list = ", ".join([f"'{item.strip('\'\"')}'" for item in other_message[key]["list"]])
+
+                    # Check if the formatted_list exceeds 500 characters
+                    if len(formatted_list) > 500:
+                        # Reformat the list to show each entry on a new line
+                        formatted_list = "\n".join([f"'{item.strip('\'\"')}'" for item in other_message[key]["list"]])
                     logger.info(formatted_list)
                     logger.info("")
 
@@ -472,7 +482,12 @@ def start(attrs):
                         logger.info(f"{key[13:]}")
                     elif key.startswith(("TMDb Error", "TVDb Error")) and "Invalid API key" not in key:
                         logger.info(f"{key[12:]}")
-                    formatted_list = ", ".join([f"'{item.strip('\'\"')}'" for item in other_message[key]["list"] if "You must be granted a valid key." not in item])
+                    formatted_list = ", ".join([f"'{item.strip('\'\"')}'" for item in other_message[key]["list"]])
+
+                    # Check if the formatted_list exceeds 500 characters
+                    if len(formatted_list) > 500:
+                        # Reformat the list to show each entry on a new line
+                        formatted_list = "\n".join([f"'{item.strip('\'\"')}'" for item in other_message[key]["list"]])
                     logger.info(formatted_list)
                     logger.info("")
 
@@ -482,8 +497,13 @@ def start(attrs):
                         logger.separator("Asset Errors", space=False, border=False)
                         logger.info("")
                         asset_title = True
-                    logger.info(f"{key[15:]}")
+                    logger.info(f"{key[15:]}:")
                     formatted_list = ", ".join([f"'{item.strip('\'\"')}'" for item in other_message[key]["list"]])
+
+                    # Check if the formatted_list exceeds 500 characters
+                    if len(formatted_list) > 500:
+                        # Reformat the list to show each entry on a new line
+                        formatted_list = "\n".join([f"'{item.strip('\'\"')}'" for item in other_message[key]["list"]])
                     logger.info(formatted_list)
                     logger.info("")
 
