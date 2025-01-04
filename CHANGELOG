@@ -16,6 +16,7 @@ Allow `sync_to_trakt_list` on episode-level collections
 When using `mass_poster_update`, added `ignore_locked` and `ignore_overlays` attributes which will prevent Kometa from resetting the image if the poster field is locked (i.e. a previous mass poster update) or if the item has an Overlay. This can effectively act as a differential update system.
 When using `mass_background_update`, added `ignore_locked` attribute which will prevent Kometa from resetting the image if the poster field is locked (i.e. a previous mass poster update). This can effectively act as a differential update system.
 Add `date` option for schedules
+Added some grouping to errors in the terminal and log files to try and avoid walls of text. Also added some basic troubleshooting tips to some error messages
 
 # Docs
 Added "getting started" page
