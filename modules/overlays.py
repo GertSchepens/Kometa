@@ -206,7 +206,7 @@ class Overlays:
                             raise Failed(f"  Overlay Error: {e}")
                     poster_compare = None
                     if poster is None and has_original is None:
-                        logger.error(f"  Overlay Error: No poster found")
+                        logger.error(f"  Overlay Error: No poster found: {item_title}")
                     elif self.library.reapply_overlays or new_backup or overlay_change or changed_image:
                         try:
                             if not self.library.reapply_overlays and new_backup:
@@ -531,7 +531,7 @@ class Overlays:
                     if self.cache and poster_compare:
                         self.cache.update_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays", item.thumb, poster_compare, overlay='|'.join(compare_names))
                 except Failed as e:
-                    logger.error(f"  {e}\n  Overlays Attempted on {item_title}: {', '.join(over_names)}")
+                    logger.error(f"Overlay Warning: Overlays attempted on {item_title}: {', '.join(over_names)}. Error: {e}")
                 except Exception as e:
                     logger.info(e)
                     logger.info(type(e))

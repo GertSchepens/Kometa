@@ -127,11 +127,11 @@ class TMDbMovie(TMDBObj):
     def load_movie(self):
         try:
             return self._tmdb.TMDb.movie(self.tmdb_id, partial="external_ids,keywords")
-        except NotFound:
-            raise Failed(f"TMDb Error: No Movie found for TMDb ID: {self.tmdb_id}")
-        except TMDbException as e:
-            logger.stacktrace()
-            raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID: {self.tmdb_id}: {e}")
+        except NotFound as e:
+            # Create the failed message
+            failed_message = f"TMDb Error: No Movie found for TMDb ID: {self.tmdb_id}"
+            print(failed_message)  # Print the message for debugging
+            raise Failed(failed_message) from e
 
 
 class TMDbShow(TMDBObj):
@@ -320,9 +320,12 @@ class TMDb:
         tmdb_list = util.get_int_list(tmdb_ids, f"TMDb {type_map[tmdb_method]} ID")
         tmdb_values = []
         for tmdb_id in tmdb_list:
-            try:                                        tmdb_values.append(self.validate_tmdb(tmdb_id, tmdb_method))
-            except Failed as e:                         logger.error(e)
-        if len(tmdb_values) == 0:                   raise Failed(f"TMDb Error: No valid TMDb IDs in {tmdb_list}")
+            try:
+                tmdb_values.append(self.validate_tmdb(tmdb_id, tmdb_method))
+            except Failed as e:
+                logger.error(e)
+        if len(tmdb_values) == 0:
+            raise Failed(f"TMDb Error: No valid TMDb IDs in {', '.join(map(str, tmdb_list))}")
         return tmdb_values
 
     def validate_tmdb(self, tmdb_id, tmdb_method):
@@ -447,11 +450,11 @@ class TMDb:
             except Failed as e:
                 logger.error(str(e))
         elif tvdb_id and not is_movie:
-            logger.info(f"{item.title[:25]:<25} | No TMDb ID for TVDb ID: {tvdb_id}")
+            logger.info(f"No TMDb ID found for: {item.title[:25]:<25} (TVDb ID: {tvdb_id})")
         elif imdb_id:
-            logger.info(f"{item.title[:25]:<25} | No TMDb ID for IMDb ID: {imdb_id}")
+            logger.info(f"No TMDb ID found for: {item.title[:25]:<25} (IMDb ID: {imdb_id})")
         else:
-            logger.info(f"{item.title[:25]:<25} | No TMDb ID for Guid: {item.guid}")
+            logger.info(f"No TMDb ID found for: {item.title[:25]:<25} (Plex Guid: {item.guid})")
         return tmdb_item
 
     def item_filter(self, item, filter_attr, modifier, filter_final, filter_data, is_movie, current_time):

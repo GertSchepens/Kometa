@@ -491,9 +491,9 @@ class Plex(Library):
                 logger.info("Scheduled maintenance times could not be found")
         except Unauthorized:
             logger.info(f"Plex Error: Plex connection attempt returned 'Unauthorized'")
-            raise Failed("Plex Error: Plex token is invalid")
+            raise Failed("Plex Error: The specified token is not valid. Please check Plex support for finding an authentication token.")
         except ConnectTimeout:
-            raise Failed(f"Plex Error: Plex did not respond within the {self.timeout}-second timeout.")
+            raise Failed(f"Plex Error: Plex did not respond within the {self.timeout}-second timeout. Try increasing timeout or checking if maintenance tasks are running. Kometa cannot do anything to resolve this.")
         except ValueError as e:
             logger.info(f"Plex Error: Plex connection attempt returned 'ValueError'")
             logger.stacktrace()
@@ -501,7 +501,7 @@ class Plex(Library):
         except (ConnectionError, ParseError):
             logger.info(f"Plex Error: Plex connection attempt returned 'ConnectionError' or 'ParseError'")
             logger.stacktrace()
-            raise Failed("Plex Error: Plex URL is probably invalid")
+            raise Failed("Plex Error: The Plex URL specified could not be reached. Check Plex URL is correct and reachable")
         self.Plex = None
         library_names = []
         for s in self.PlexServer.library.sections():
@@ -510,11 +510,11 @@ class Plex(Library):
                 self.Plex = s
                 break
         if not self.Plex:
-            raise Failed(f"Plex Error: Plex Library '{params['name']}' not found. Options: {library_names}")
+            raise Failed(f"Plex Error: Plex Library '{params['name']}' could not be found. The following libraries are available in Plex: {library_names}")
         if self.Plex.type not in library_types:
             raise Failed(f"Plex Error: Plex Library must be a Movies, TV Shows, or Music library")
         if not self.Plex.allowSync:
-            raise Failed("Plex Error: Plex Token is read only. Please get a new token")
+            raise Failed("Plex Error: Plex Token is read only. Please check Plex support for finding an authentication token.")
 
         self.type = self.Plex.type.capitalize()
         self.plex_pass = self.PlexServer.myPlexSubscription
@@ -608,7 +608,7 @@ class Plex(Library):
         results = []
         total_size = 1
         while total_size > len(results) and container_start <= total_size:
-            data = self.Plex._server.query(key, headers={"X-Plex-Container-Start": str(container_start), "X-Plex-Container-Size": str(container_size)})
+            data = self.Plex._server.query(key, headers={"X-Plex-Container-Start": str(container_start), "X-Plex-Container-Size": str(container_size), }, )
             subresults = self.Plex.findItems(data, initpath=key)
             total_size = utils.cast(int, data.attrib.get('totalSize') or data.attrib.get('size')) or len(subresults)
 
@@ -616,7 +616,6 @@ class Plex(Library):
             if librarySectionID:
                 for item in subresults:
                     item.librarySectionID = librarySectionID
-
             results.extend(subresults)
             container_start += container_size
             logger.ghost(f"Loaded: {total_size if container_start > total_size else container_start}/{total_size}")

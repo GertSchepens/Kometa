@@ -360,6 +360,10 @@ def start(attrs):
             convert_errors = {}
 
             other_log_groups = [
+                ("Plex Error: Plex Library", r"Plex Error: Plex Library (.*) not found"),
+                ("Plex Error:", r"Plex Error: (.*)"),
+                ("Config Error:", r"Config Error: (.*)"),
+                ("TMDb Error: Invalid API key", r"TMDb Error: Invalid API key: (.*)"),
                 ("No Items found for", r"No Items found for .* \(\d+\) (.*)"),
                 ("Convert Warning: No TVDb ID or IMDb ID found for AniDB ID:", r"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID: (.*)"),
                 ("Convert Warning: No AniDB ID Found for AniList ID:", r"Convert Warning: No AniDB ID Found for AniList ID: (.*)"),
@@ -372,6 +376,19 @@ def start(attrs):
                 ("Convert Warning: No TVDb ID Found for IMDb ID:", r"Convert Warning: No TVDb ID Found for IMDb ID: (.*)"),
                 ("Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid:", r"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: (.*)"),
                 ("Convert Warning: No MyAnimeList Found for AniDB ID:", r"Convert Warning: No MyAnimeList Found for AniDB ID: (.*) of Guid: .*"),
+                ("TMDb Error: No Movie found for TMDb ID:", r"TMDb Error: No Movie found for TMDb ID: (.*)"),
+                ("TMDb Error: No valid TMDb IDs in", r"TMDb Error: No valid TMDb IDs in (.*)"),
+                ("TVDb Error: No Series found for TVDb ID:", r"TVDb Error: No Series found for TVDb ID: (.*) at .*"),
+                ("Trakt Error: No TVDb ID found for", r"Trakt Error: No TVDb ID found for (.*)"),
+                ("Filter Error: No TMDb ID found for", r"Filter Error: No TMDb ID found for (.*)"),
+                ("Asset Warning: Unable to find asset folder:", r"Asset Warning: Unable to find asset folder: (.*)"),
+                ("Asset Warning: No poster or background found in the assets folder", r"Asset Warning: No poster or background found in the assets folder (.*)"),
+                ("Asset Warning: No video filepath found for", r"Asset Warning: No video filepath found for (.*)"),
+                ("Asset Warning: Asset Directory Not Found and Created:", r"Asset Warning: Asset Directory Not Found and Created: (.*)"),
+                ("Asset Warning: Asset Directory Not Found and Created:", r"Asset Warning: Asset Directory Not Found and Created: (.*)"),
+                ("Overlay Error: No poster found:", r"Overlay Error: No poster found: (.*)"),
+                ("Overlay Warning: Overlays attempted on", r"Overlay Warning: Overlays attempted on (.*). Image Not Found on URL: .*"),
+
             ]
             other_message = {}
 
@@ -394,22 +411,82 @@ def start(attrs):
                                 if err_type not in log_data:
                                     log_data[err_type] = []
                                 log_data[err_type].append(log_line)
-
-            if "No Items found for" in other_message:
-                logger.separator(f"Overlay Errors Summary", space=False, border=False)
-                logger.info("")
-                logger.info(f"No Items found for {other_message['No Items found for']['count']} Overlays: {other_message['No Items found for']['list']}")
-                logger.info("")
-
+            connector_title = False
             convert_title = False
+            asset_title = False
+            builder_title = False
             for key, _ in other_log_groups:
-                if key.startswith("Convert Warning") and key in other_message:
+
+
+                if key.startswith(("Plex Error", "Config Error", "TMDb Error: Invalid API key")) and key in other_message:
+                    if connector_title is False:
+                        logger.separator("Config & Connector Errors", space=False, border=False)
+                        logger.info("")
+                        connector_title = True
+                    if key.startswith("Plex Error: Plex Library"):
+                        logger.info(f"The follow libraries could not be found in Plex:")
+                    if key.startswith("Plex Error"):
+                        logger.info(f"{key}")
+                    elif key.startswith("Config Error"):
+                        logger.info(f"{key}")
+                    elif key.startswith("TMDb Error: Invalid API key"):
+                        logger.info(f"TMDb API Key Error:")
+                    formatted_items = []
+                    for item in other_message[key]["list"]:
+                        stripped_item = item.strip('\'\"')
+                        if stripped_item == "You must be granted a valid key.":
+                            formatted_items.append("'Please check your API key is valid or check TMDb guidance for getting a new API key'")
+                        else:
+                            formatted_items.append(f"'{stripped_item}'")
+                    formatted_list = ", ".join(formatted_items)
+                    logger.info(formatted_list)
+                    logger.info("")
+
+
+                if key.startswith(("TMDb Error: No valid TMDb IDs in","Overlay Error","Overlay Warning: Overlays attempted on")) and key in other_message:
+                    if builder_title is False:
+                        logger.separator("Collection/Overlay/Playlist Errors", space=False, border=False)
+                        logger.info("")
+                        builder_title = True
+                    if key.startswith("TMDb Error: No valid TMDb IDs in"):
+                        logger.info(f"Builder Error: No valid TMDb IDs in:")
+                    elif key.startswith("Overlay Error"):
+                        logger.info(f"{key}")
+                    elif key.startswith("Overlay Warning: Overlays attempted on"):
+                        logger.info(f"Image Not Found in Plex (Error 404) when attempting Overlays on:")
+                    formatted_list = ", ".join([f"'{item.strip('\'\"')}'" for item in other_message[key]["list"]])
+                    logger.info(formatted_list)
+                    logger.info("")
+
+                elif key.startswith(("Convert Warning", "Trakt Error", "Filter Error", "TMDb Error", "TVDb Error")) and key in other_message:
                     if convert_title is False:
-                        logger.separator("Convert Summary", space=False, border=False)
+                        logger.separator("Convert and Mapping Errors", space=False, border=False)
                         logger.info("")
                         convert_title = True
-                    logger.info(f"{key[17:]}")
-                    logger.info(", ".join(other_message[key]["list"]))
+                    if key.startswith("Convert Warning"):
+                        logger.info(f"{key[17:]}")
+
+                    elif key.startswith("Filter Error"):
+                        logger.info(f"{key[14:]}")
+                    elif key.startswith("Trakt Error"):
+                        logger.info(f"{key[13:]}")
+                    elif key.startswith(("TMDb Error", "TVDb Error")) and "Invalid API key" not in key:
+                        logger.info(f"{key[12:]}")
+                    formatted_list = ", ".join([f"'{item.strip('\'\"')}'" for item in other_message[key]["list"] if "You must be granted a valid key." not in item])
+                    logger.info(formatted_list)
+                    logger.info("")
+
+
+                elif key.startswith("Asset Warning") and key in other_message:
+                    if asset_title is False:
+                        logger.separator("Asset Errors", space=False, border=False)
+                        logger.info("")
+                        asset_title = True
+                    logger.info(f"{key[15:]}")
+                    formatted_list = ", ".join([f"'{item.strip('\'\"')}'" for item in other_message[key]["list"]])
+                    logger.info(formatted_list)
+                    logger.info("")
+
             if convert_title:
                 logger.info("")
 

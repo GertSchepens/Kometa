@@ -120,9 +120,9 @@ class Requests:
     def get_image(self, url, session=None):
         response = self.get(url, header=True) if session is None else session.get(url, headers=get_header(None, True, None))
         if response.status_code == 404:
-            raise Failed(f"Image Error: Not Found on Image URL: {url}")
+            raise Failed(f"Image Not Found on URL: {url}")
         if response.status_code >= 400:
-            raise Failed(f"Image Error: {response.status_code} on Image URL: {url}")
+            raise Failed(f"Error {response.status_code} on Image URL: {url}")
         if "Content-Type" not in response.headers or response.headers["Content-Type"] not in self.image_content_types:
             raise Failed("Image Not PNG, JPG, or WEBP")
         return response
