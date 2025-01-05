@@ -490,18 +490,18 @@ class Plex(Library):
             except NotFound:
                 logger.info("Scheduled maintenance times could not be found")
         except Unauthorized:
-            logger.info(f"Plex Error: Plex connection attempt returned 'Unauthorized'")
-            raise Failed("Plex Error: The specified token is not valid. Please check Plex support for finding an authentication token.")
+            logger.info(f"Connector Error: Plex connection attempt returned 'Unauthorized'")
+            raise Failed("Connector Error: The Plex token specified is not valid. Please check Plex support for finding an authentication token.")
         except ConnectTimeout:
-            raise Failed(f"Plex Error: Plex did not respond within the {self.timeout}-second timeout. Try increasing timeout or checking if maintenance tasks are running. Kometa cannot do anything to resolve this.")
+            raise Failed(f"Connector Error: Plex did not respond within the {self.timeout}-second timeout. Try increasing timeout or checking if maintenance tasks are running. Kometa cannot do anything to resolve this.")
         except ValueError as e:
-            logger.info(f"Plex Error: Plex connection attempt returned 'ValueError'")
+            logger.info(f"Connector Error: Plex connection attempt returned 'ValueError'")
             logger.stacktrace()
-            raise Failed(f"Plex Error: {e}")
+            raise Failed(f"Connector Error: {e}")
         except (ConnectionError, ParseError):
-            logger.info(f"Plex Error: Plex connection attempt returned 'ConnectionError' or 'ParseError'")
+            logger.info(f"Connector Error: Plex connection attempt returned 'ConnectionError' or 'ParseError'")
             logger.stacktrace()
-            raise Failed("Plex Error: The Plex URL specified could not be reached. Check Plex URL is correct and reachable")
+            raise Failed("Connector Error: The Plex URL specified could not be reached. Check Plex URL is correct and reachable")
         self.Plex = None
         library_names = []
         for s in self.PlexServer.library.sections():
@@ -510,11 +510,11 @@ class Plex(Library):
                 self.Plex = s
                 break
         if not self.Plex:
-            raise Failed(f"Plex Error: Plex Library '{params['name']}' could not be found. The following libraries are available in Plex: {library_names}")
+            raise Failed(f"Connector Error: Plex Library '{params['name']}' could not be found. The following libraries are available in Plex: {library_names}")
         if self.Plex.type not in library_types:
-            raise Failed(f"Plex Error: Plex Library must be a Movies, TV Shows, or Music library")
+            raise Failed(f"Connector Error: Plex Library must be a Movies, TV Shows, or Music library")
         if not self.Plex.allowSync:
-            raise Failed("Plex Error: Plex Token is read only. Please check Plex support for finding an authentication token.")
+            raise Failed("Connector Error: The Plex token specified is read only. Please check Plex support for finding an authentication token.")
 
         self.type = self.Plex.type.capitalize()
         self.plex_pass = self.PlexServer.myPlexSubscription

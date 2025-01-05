@@ -2650,7 +2650,7 @@ class CollectionBuilder:
                         used.append(name)
                         valid_list.append((name, key) if plex_search else name)
             if not valid_list:
-                error = f"Plex Error: {attribute}: No matches found with regex pattern {data}"
+                error = f"Plex Error: No matches found for {attribute} with regex pattern {data}"
                 if self.details["show_options"]:
                     error += f"\nOptions: {names}"
                 if validate:

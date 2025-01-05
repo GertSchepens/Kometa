@@ -31,7 +31,7 @@ class GitHub:
         if response.status_code >= 400:
             logger.stacktrace()
             logger.error(response.reason)
-            raise Failed(f"Git Error: {err_msg}")
+            raise Failed(f"GitHub Error: {err_msg}")
         try:
             return response.json()
         except ValueError:

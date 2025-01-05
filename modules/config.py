@@ -440,7 +440,7 @@ class ConfigFile:
                 message = message + f" using {default} as default"
             message = message + endline
             if req_default and default is None:
-                raise Failed(f"Config Error: {attribute} attribute must be set under {parent} globally or under this specific Library")
+                raise Failed(f"Config Error: {parent} sub-attribute {attribute} has not been set. Please set the {attribute} value at the library or global level.")
             options = ""
             if test_list:
                 for test_option, test_description in test_list.items():
@@ -452,9 +452,10 @@ class ConfigFile:
                     message = message + "\n" + options
                 raise Failed(f"Config Error: {message}")
             if do_print:
-                logger.warning(f"Config Warning: {message}")
                 if final_value and test_list is not None and final_value not in test_list:
-                    logger.warning(options)
+                    logger.warning(f"Config Warning: {message}.\nAvailable options:\n{options}")
+                elif not (final_value and test_list is not None and final_value not in test_list):
+                    logger.warning(f"Config Warning: {message}")
             return default
 
         self.general = {

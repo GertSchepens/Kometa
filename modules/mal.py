@@ -1,4 +1,4 @@
-import re, secrets, time, webbrowser
+import re, secrets, time, webbrowser, traceback
 from datetime import datetime
 from json import JSONDecodeError
 from modules import util
@@ -95,8 +95,12 @@ class MyAnimeList:
                 if not self._refresh():
                     self._authorization()
         except Exception:
+            tb = traceback.format_exc()  # Get the full traceback as a string
             logger.stacktrace()
-            raise Failed("MyAnimeList Error: Failed to Connect")
+            if "No input MyAnimeList code required" in tb:
+                raise Failed("Connector Error: MyAnimeList input skipped. If you cannot enter the data we suggest you use the online authenticator at https://kometa.wiki/en/latest/config/authentication/")
+            raise Failed("Connector Error: MyAnimeList failed to connect. If you are struggling to authenticate MyAnimeList, we suggest you use the online authenticator at https://kometa.wiki/en/latest/config/authentication/")
+
         self._genres = {}
         self._studios = {}
         self._delay = None
@@ -135,11 +139,11 @@ class MyAnimeList:
             logger.info("url that most likely won't load, which is fine. Copy the URL and paste it below")
             webbrowser.open(url, new=2)
             try:                                url = util.logger_input("URL").strip()
-            except TimeoutExpired:              raise Failed("Input Timeout: URL required.")
-            if not url:                         raise Failed("MyAnimeList Error: No input MyAnimeList code required.")
+            except TimeoutExpired:              raise Failed("Connector Error: MyAnimeList URL input timeout reached. If you cannot enter the URL, we suggest you use the online authenticator at https://kometa.wiki/en/latest/config/authentication/")
+            if not url:                         raise Failed("Connector Error: MyAnimeList input skipped. If you cannot enter the data we suggest you use the online authenticator at https://kometa.wiki/en/latest/config/authentication/")
         match = re.search("code=([^&]+)", str(url))
         if not match:
-            raise Failed("MyAnimeList Error: Invalid URL")
+            raise Failed("Connector Error: Invalid MyAnimeList URL. Please verify the URL or try using the online authenticator at https://kometa.wiki/en/latest/config/authentication/")
         code = match.group(1)
         data = {
             "client_id": self.client_id,
@@ -150,9 +154,9 @@ class MyAnimeList:
         }
         new_authorization = self._oauth(data)
         if "error" in new_authorization:
-            raise Failed("MyAnimeList Error: Invalid code")
+            raise Failed("Connector Error: Invalid MyAnimeList code. Please verify the code or try using the online authenticator at https://kometa.wiki/en/latest/config/authentication/")
         if not self._save(new_authorization):
-            raise Failed("MyAnimeList Error: New Authorization Failed")
+            raise Failed("Connector Error: MyAnimeList authorization failed. Please try reauthorizing or try using the online authenticator at https://kometa.wiki/en/latest/config/authentication/")
 
     def _check(self, authorization):
         try:
@@ -204,7 +208,7 @@ class MyAnimeList:
             if "error" in response:         raise Failed(f"MyAnimeList Error: {response['error']}")
             else:                           return response
         except JSONDecodeError:
-            raise Failed(f"MyAnimeList Error: Connection Failed")
+            raise Failed(f"MyAnimeList Error: Connection failed, please try again.")
 
     def _jikan_request(self, url, params=None):
         logger.trace(f"URL: {jikan_base_url}{url}")

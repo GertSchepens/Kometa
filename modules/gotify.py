@@ -15,7 +15,7 @@ class Gotify:
             logger.info(f"Gotify Version: {self._request(path='version', post=False)['version']}")
         except Exception:
             logger.stacktrace()
-            raise Failed("Gotify Error: Invalid URL")
+            raise Failed("Gotify Error: The Gotify URL specified could not be reached. Check Plex URL is correct and reachable")
 
     def _request(self, path="message", json=None, post=True):
         if post:

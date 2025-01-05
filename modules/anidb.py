@@ -113,12 +113,12 @@ class AniDB:
             self.get_anime(69, ignore_cache=True)
             if self.cache:
                 self.cache.update_testing("anidb_login", self.client, self.version, "True")
-        except Failed:
+        except Failed as e:
             self.client = None
             self.version = None
             if self.cache:
                 self.cache.update_testing("anidb_login", self.client, self.version, "False")
-            raise
+            raise Failed("AniDB Connection Error: Client/Version could not be verified. Please check these are correct. AniDB Library Operations will not function until this is resolved.") from e
 
     @property
     def is_authorized(self):
@@ -129,7 +129,7 @@ class AniDB:
         logger.secret(password)
         data = {"show": "main", "xuser": username, "xpass": password, "xdoautologin": "on"}
         if not self._request(urls["login"], data=data).xpath("//li[@class='sub-menu my']/@title"):
-            raise Failed("AniDB Error: Login failed")
+            raise Failed("AniDB Connection Error: Username/Password could not ve verified. Please verify that the username and password are correct. AniDB Builders will still work but Mature content will not be reachable until this is resolved.")
         self.username = username
         self.password = password
 

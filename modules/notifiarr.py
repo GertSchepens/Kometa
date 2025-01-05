@@ -30,7 +30,7 @@ class Notifiarr:
             raise Failed("Notifiarr Error: Invalid JSON response received")
         if response.status_code >= 400 or ("result" in response_json and response_json["result"] == "error"):
             logger.debug(f"Response: {response_json}")
-            raise Failed(f"({response.status_code} [{response.reason}]) {response_json}")
+            raise Failed(f"Notifiarr Connection Error: ({response.status_code} [{response.reason}]) {response_json}")
         if not response_json["details"]["response"]:
-            raise Failed("Notifiarr Error: Invalid apikey")
+            raise Failed("Notifiarr Error: Invalid API key")
         return response

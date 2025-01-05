@@ -126,8 +126,8 @@ class MDBList:
         if "response" in response and (response["response"] is False or response["response"] == "False"):
             if response["error"] in ["API Limit Reached!", "API Rate Limit Reached!"]:
                 self.limit = True
-                raise LimitReached(f"MDBList Error: {response['error']}")
-            raise Failed(f"MDBList Error: {response['error']}")
+                raise LimitReached(f"MDBList Error: {response['error'].replace('!', '')}")
+            raise Failed(f"MDBList Error: {response['error'].replace('!', '')}")
         return response
 
     def get_item(self, imdb_id=None, tmdb_id=None, tvdb_id=None, is_movie=True, ignore_cache=False):

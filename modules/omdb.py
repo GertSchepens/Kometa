@@ -12,7 +12,7 @@ class OMDbObj:
         self._imdb_id = imdb_id
         self._data = data
         if data["Response"] == "False":
-            raise Failed(f"OMDb Error: {data['Error']} IMDb ID: {imdb_id}")
+            raise Failed(f"OMDb Error: {data['Error'].replace('!', '')} IMDb ID: {imdb_id}")
 
         def _parse(key, is_int=False, is_float=False, is_date=False, replace=None):
             try:
@@ -72,8 +72,9 @@ class OMDb:
         else:
             try:
                 error = response.json()['Error']
-                if error == "Request limit reached!":
+                if error == "OMDb Error: API request limit reached":
                     self.limit = True
             except JSONDecodeError:
                 error = f"Invalid JSON: {response.content}"
-            raise Failed(f"OMDb Error: {error}")
+            raise Failed(f"OMDb Error: {error.replace('!', '')}")
+

@@ -129,9 +129,9 @@ class Trakt:
             try:
                 pin = util.logger_input("Trakt pin (case insensitive)", timeout=300).strip()
             except TimeoutExpired:
-                raise Failed("Input Timeout: Trakt pin required.")
+                raise Failed("Connector Error: Trakt PIN input timeout reached. If you cannot enter the PIN, we suggest you use the online authenticator at https://kometa.wiki/en/latest/config/authentication/")
         if not pin:
-            raise Failed("Trakt Error: Trakt pin required.")
+            raise Failed("Connector Error: Trakt PIN is required. If you cannot enter the PIN we suggest you use the online authenticator at https://kometa.wiki/en/latest/config/authentication/")
         json_data = {
             "code": pin,
             "client_id": self.client_id,
@@ -141,11 +141,11 @@ class Trakt:
         }
         response = self.requests.post(f"{base_url}/oauth/token", json=json_data, headers={"Content-Type": "application/json"})
         if response.status_code != 200:
-            raise Failed(f"Trakt Error: ({response.status_code}) {response.reason}")
+            raise Failed(f"Connector Error: Trakt OAuth Error: ({response.status_code}) {response.reason}")
         response_json = response.json()
         logger.trace(response_json)
         if not self._save(response_json):
-            raise Failed("Trakt Error: New Authorization Failed")
+            raise Failed("Connector Error: Trakt Authorization Failed. If you are struggling to authenticate, we suggest you use the online authenticator at https://kometa.wiki/en/latest/config/authentication/")
 
     def _check(self, authorization=None):
         token = self.authorization['access_token'] if authorization is None else authorization['access_token']
@@ -158,7 +158,7 @@ class Trakt:
         logger.secret(token)
         response = self.requests.get(f"{base_url}/users/settings", headers=headers)
         if response.status_code == 423:
-            raise Failed("Trakt Error: Account is Locked please Contact Trakt Support")
+            raise Failed("Connector Error: Trakt Account is locked, please Contact Trakt Support for further assistance or create a new Trakt account.")
         if response.status_code != 200:
             logger.debug(f"Trakt Error: ({response.status_code}) {response.reason}")
         return response.status_code == 200

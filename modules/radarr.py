@@ -24,10 +24,16 @@ class Radarr:
         try:
             self.api = RadarrAPI(self.url, self.token, session=self.requests.session)
             self.api.respect_list_exclusions_when_adding()
-            self.api._validate_add_options(params["root_folder_path"], params["quality_profile"]) # noqa
+            self.api._validate_add_options(params["root_folder_path"], params["quality_profile"])  # noqa
             self.profiles = self.api.quality_profile()
         except ArrException as e:
-            raise Failed(e)
+            if "Failed to Connect" in str(e):
+                raise Failed("Connector Error: The Radarr URL specified could not be reached. Check Radarr URL is correct and reachable") from e
+            elif "401 [Unauthorized]" in str(e):
+                raise Failed("Connector Error: The Radarr token specified could not be validated. Please verify that the token is correct.") from e
+            else:
+                raise Failed(f"Radarr Error: {e}")
+
         self.add_missing = params["add_missing"]
         self.add_existing = params["add_existing"]
         self.upgrade_existing = params["upgrade_existing"]

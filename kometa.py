@@ -360,8 +360,8 @@ def start(attrs):
             convert_errors = {}
 
             other_log_groups = [
-                ("Plex Error: Plex Library", r"Plex Error: Plex Library (.*) not found"),
-                ("Plex Error:", r"Plex Error: (.*)"),
+                ("Connector Error: Plex Library", r"Plex Error: Plex Library (.*) not found"),
+                ("Connector Error:", r"Connector Error: (.*)"),
                 ("Config Error:", r"Config Error: (.*)"),
                 ("TMDb Error: Invalid API key", r"TMDb Error: Invalid API key: (.*)"),
                 ("No Items found for", r"No Items found for .* \(\d+\) (.*)"),
@@ -377,7 +377,7 @@ def start(attrs):
                 ("Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid:", r"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: (.*)"),
                 ("Convert Warning: No MyAnimeList Found for AniDB ID:", r"Convert Warning: No MyAnimeList Found for AniDB ID: (.*) of Guid: .*"),
                 ("TMDb Error: No Movie found for TMDb ID:", r"TMDb Error: No Movie found for TMDb ID: (.*)"),
-                ("TMDb Error: No valid TMDb IDs in", r"TMDb Error: No valid TMDb IDs in (.*)"),
+                ("TMDb Error: No valid TMDb IDs in:", r"TMDb Error: No valid TMDb IDs in: (.*)"),
                 ("TMDb Error: No Collection found for TMDb ID", r"TMDb Error: No Collection found for TMDb ID (.*)"),
                 ("TVDb Error: No Series found for TVDb ID:", r"TVDb Error: No Series found for TVDb ID: (.*) at .*"),
                 ("Trakt Error: No TVDb ID found for", r"Trakt Error: No TVDb ID found for (.*)"),
@@ -389,6 +389,20 @@ def start(attrs):
                 ("Asset Warning: Asset Directory Not Found and Created:", r"Asset Warning: Asset Directory Not Found and Created: (.*)"),
                 ("Overlay Error: No poster found:", r"Overlay Error: No poster found: (.*)"),
                 ("Overlay Warning: Overlays attempted on", r"Overlay Warning: Overlays attempted on (.*). Image Not Found on URL: .*"),
+                ("No Items found for Overlay File", r"No Items found for Overlay File \(\d+\)\s*(.*)"),
+                ("Plex Error: No matches found for", r"Plex Error: No matches found for .+ with regex pattern (.*)"),
+                ("Plex Error:", r"Plex Error: (.*)"),
+                ("Tautulli Error:", r"Tautulli Error: (.*)"),
+                ("GitHub Error:", r"GitHub Error: (.*)"),
+                ("OMDb Error:", r"OMDb Error: (.*)"),
+                ("MDBList Error: Invalid API key or Rate Limiter Reached", r"MDBList Error: (.*)"),
+                ("Notifiarr Error: Invalid API key", r"Notifiarr Error: (.*)"),
+                ("Gotify Error:", r"Gotify Error: (.*)"),
+                ("AniDB Connection Error:", r"AniDB Connection Error: (.*)"),
+                ("Radarr Error:", r"Radarr Error: (.*)"),
+                ("Config Warning: radarr sub-attribute", r"Config Warning: radarr sub-attribute (.*) is blank using .* as default"),
+                ("Sonarr Error:", r"Sonarr Error: (.*)"),
+                ("Config Warning: sonarr sub-attribute", r"Config Warning: sonarr sub-attribute (.*) is blank using .* as default"),
 
             ]
             other_message = {}
@@ -425,49 +439,72 @@ def start(attrs):
             for key, _ in other_log_groups:
 
 
-                if key.startswith(("Plex Error", "Config Error", "TMDb Error: Invalid API key")) and key in other_message:
+                if key.startswith(("Connector Error", "Config Error", "TMDb Error: Invalid API key","Tautulli Error","GitHub Error","OMDb Error", "MDBList Error: Invalid API key or Rate Limiter Reached","Notifiarr Error: Invalid API key","Gotify Error","AniDB Connection Error","Radarr Error","Config Warning: radarr sub-attribute","Sonarr Error","Config Warning: sonarr sub-attribute")) and key in other_message:
                     if connector_title is False:
                         logger.separator("Config & Connector Errors", space=False, border=False)
                         logger.info("")
                         connector_title = True
-                    if key.startswith("Plex Error: Plex Library"):
+                    if key.startswith("Connector Error: Plex Library"):
                         logger.info(f"The follow libraries could not be found in Plex:")
-                    elif key.startswith("Plex Error"):
+                    elif key.startswith("Connector Error"):
                         logger.info(f"{key}")
                     elif key.startswith("Config Error"):
                         logger.info(f"{key}")
                     elif key.startswith("TMDb Error: Invalid API key"):
                         logger.info(f"TMDb API Key Error:")
+                    elif key.startswith("Tautulli Error"):
+                        logger.info(f"{key}")
+                    elif key.startswith("GitHub Error"):
+                        logger.info(f"{key}")
+                    elif key.startswith("OMDb Error"):
+                        logger.info(f"{key}")
+                    elif key.startswith("MDBList Error: Invalid API key or Rate Limiter Reached"):
+                        logger.info(f"MDBList Error:")
+                    elif key.startswith("Notifiarr Error: Invalid API key"):
+                        logger.info(f"Notifiarr Error:")
+                    elif key.startswith("Gotify Error"):
+                        logger.info(f"{key}")
+                    elif key.startswith("AniDB Connection Error"):
+                        logger.info(f"AniDB Error:")
+                    elif key.startswith("Radarr Error"):
+                        logger.info(f"{key}")
+                    elif key.startswith("Config Warning: radarr sub-attribute"):
+                        logger.info(f"Radarr attribute has no value, falling back to default instead:")
+                    elif key.startswith("Sonarr Error"):
+                        logger.info(f"{key}")
+                    elif key.startswith("Config Warning: sonarr sub-attribute"):
+                        logger.info(f"Sonarr attribute has no value, falling back to default instead:")
                     formatted_items = []
                     for item in other_message[key]["list"]:
                         stripped_item = item.strip('\'\"')
                         if stripped_item == "You must be granted a valid key.":
-                            formatted_items.append("'Please check your API key is valid or check TMDb guidance for getting a new API key'")
+                            formatted_items.append("Please check your API key is valid or check TMDb guidance for getting a new API key")
                         else:
-                            formatted_items.append(f"'{stripped_item}'")
-                    formatted_list = ", ".join([f"'{item.strip('\'\"')}'" for item in other_message[key]["list"]])
+                            formatted_items.append(stripped_item)
 
-                    # Check if the formatted_list exceeds 500 characters
-                    if len(formatted_list) > 500:
-                        # Reformat the list to show each entry on a new line
-                        formatted_list = "\n".join([f"'{item.strip('\'\"')}'" for item in other_message[key]["list"]])
+                    formatted_list = "\n".join([f"'{item}'" for item in formatted_items])
+
                     logger.info(formatted_list)
                     logger.info("")
 
 
-                elif key.startswith(("TMDb Error: No valid TMDb IDs in","TMDb Error: No Collection found for TMDb ID","Overlay Error","Overlay Warning: Overlays attempted on")) and key in other_message:
+                elif key.startswith(("TMDb Error: No valid TMDb IDs in:","TMDb Error: No Collection found for TMDb ID","Overlay Error","Overlay Warning: Overlays attempted on","No Items found for Overlay File","Plex Error: No matches found for")) and key in other_message:
                     if builder_title is False:
                         logger.separator("Collection/Overlay/Playlist Errors", space=False, border=False)
                         logger.info("")
                         builder_title = True
                     if key.startswith("TMDb Error: No Collection found for TMDb ID"):
                         logger.info(f"Invalid TMDb collection ID:")
-                    elif key.startswith("TMDb Error: No valid TMDb IDs in"):
-                        logger.info(f"Builder Error: No valid TMDb IDs in:")
+                    elif key.startswith("TMDb Error: No valid TMDb IDs in:"):
+                        logger.info(f"Builder Error: No valid TMDb IDs found in:")
+                    elif key.startswith("Plex Error: No matches found for"):
+                        logger.info(f"Builder Error: No items matched the following regex patterns:")
                     elif key.startswith("Overlay Error"):
                         logger.info(f"{key}")
                     elif key.startswith("Overlay Warning: Overlays attempted on"):
                         logger.info(f"Image Not Found in Plex (Error 404) when attempting Overlays on:")
+                    elif key.startswith(("No Items found for Overlay File")):
+                        logger.info(f"No items matched the criteria for the following overlays:")
                     formatted_list = ", ".join([f"'{item.strip('\'\"')}'" for item in other_message[key]["list"]])
 
                     # Check if the formatted_list exceeds 500 characters
