@@ -21,6 +21,44 @@ external_templates:
         conditions:
           - use_lowercase: true
             value: <<key>>
+
+
+# Development text_size
+
+      final_font_size:
+        default: 50
+        conditions:
+          - text_size: small
+            value: 50
+          - text_size: big
+            value: 100
+          - text_size: disable
+            value: 0
+
+      final_width:
+        default: 190
+        conditions:
+          - text_size: small
+            value: 190
+          - text_size: big
+            value: 250
+          - text_size: disable
+            value: 100
+
+      long_width:
+        default: 230
+        conditions:
+          - text_size: small
+            value: 230
+          - text_size: big
+            value: 290
+          - text_size: disable
+            value: 100
+
+
+# END OF Development text_size
+
+
       final_style:
         default: round
         conditions:
@@ -44,7 +82,8 @@ external_templates:
       country: <<key>>
       country_<<key>>: <<country>>
       offset: 10
-      width: 190
+      width: <<final_width>>
+
     queue: flags
     addon_position: <<final_align>>
     addon_offset: <<offset>>
@@ -52,7 +91,7 @@ external_templates:
     back_width: <<width>>
     back_align: <<final_align>>
     font: fonts/Inter-Bold.ttf
-    font_size: 50
+    font_size: <<final_font_size>>
     final_name: text(<<final_text>>)
 
 vars:
@@ -454,7 +493,7 @@ overlays:
     template: [name: flags, name: standard]
     
   filipino:
-    variables: {key: fil, text: FIL, weight: 265, country: ph, width: 230}
+    variables: {key: fil, text: FIL, weight: 265, country: ph, width: <<long_width>>}
     template: [name: flags, name: standard]  
 
   galician:
@@ -570,7 +609,7 @@ overlays:
     template: [name: flags, name: standard]
 
   mayan:
-    variables: {key: myn, text: MYN, weight: 8, country: mx, width: 230}
+    variables: {key: myn, text: MYN, weight: 8, country: mx, width: <<long_width>>}
     template: [name: flags, name: standard]
 
   inuktitut:
@@ -578,7 +617,7 @@ overlays:
     template: [name: flags, name: standard]
     
   romani:
-    variables: {key: rom, text: ROM, weight: 6, country: ro, width: 230}
+    variables: {key: rom, text: ROM, weight: 6, country: ro, width: <<long_width>>}
     template: [name: flags, name: standard]    
     
   amharic:
@@ -598,7 +637,7 @@ overlays:
     template: [name: flags, name: standard]  
 
   mossi:
-    variables: {key: mos, text: MOS, weight: 1, country: bf, width: 230}
+    variables: {key: mos, text: MOS, weight: 1, country: bf, width: <<long_width>>}
     template: [name: flags, name: standard]
 
   lingala:
