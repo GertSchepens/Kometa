@@ -9,12 +9,15 @@ external_templates:
   default: templates
   template_variables:
     conditionals:
-      final_align:
+      default_align:
         default: left
         conditions:
-          - flag_alignment: right
-            value: right
           - use_subtitles: true
+            value: right
+      final_align:
+        default: <<default>>
+        conditions:
+          - flag_alignment: right
             value: right
       final_text:
         default: <<text>>
